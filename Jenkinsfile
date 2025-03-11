@@ -1,39 +1,37 @@
 pipeline {
-    agent any  // Runs on any available agent
-    environment {
-        DOCKER_IMAGE = "node:14"
-    }
+    agent any
     stages {
-        stage('Clone repository') {
+        // stage('Clone repository') {
+        //     steps {
+        //         checkout([$class: 'GitSCM',
+        //         branches: [[name: '*/main']],
+        //         userRemoteConfigs: [[url: 'https://github.com/sahanac1011/pes1ug22am140_Jenkins.git']]])
+        //     }
+        // }
+
+        stage('Build') {
             steps {
-                git branch: 'main', url: 'https://github.com/sahanac1011/pes1ug22am140_Jenkins.git'
+                build 'pes1ug22am140-1'
+                sh 'g++ main.cpp -o output'
             }
         }
-        stage('Install dependencies') {
-            agent {
-                docker {
-                    image 'node:14'
-                }
-            }
+
+        stage('Test') {
             steps {
-                sh 'npm install'
+                sh './output'
             }
         }
-        stage('Build application') {
+
+        stage('Deploy') {
             steps {
-                sh 'npm run build'
+                echo 'deploy'
             }
         }
-        stage('Test application') {
-            steps {
-                sh 'npm test'
-            }
-        }
-        stage('Push Docker image') {
-            steps {
-                sh 'docker build -t sahanac1011/pes1ug22am140_Jenkins:$BUILD_NUMBER .'
-                sh 'docker push sahanac1011/pes1ug22am140_Jenkins:$BUILD_NUMBER'
-            }
+    }
+
+    post {
+        failure {
+            error 'Pipeline failed'
         }
     }
 }
